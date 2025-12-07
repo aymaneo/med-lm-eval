@@ -11,5 +11,9 @@ dependencies = [
     "datasets",
 ]
 
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+
 [project.entry-points."verifiers.environments"]
-agentclinic = "agentclinic:load_environment"
+agentclinic_response = "agentclinic_response:load_environment"
+# agentclinic_chat = "agentclinic_chat:load_environment"
