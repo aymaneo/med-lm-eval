@@ -36,3 +36,6 @@ build-backend = "uv_build"
 [tool.uv.build-backend]
 module-name = "medarc_verifiers"
 module-root = ""
+
+[tool.uv]
+extra-build-dependencies = { flash-attn = ["torch"] }
