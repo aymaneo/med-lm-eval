@@ -1,0 +1,263 @@
+# MedQA Baseline RL Training Configuration
+# Experiment: Can we improve Qwen-0.5B on MedQA using RL?
+
+# ==============================================================================
+# EXPERIMENT METADATA
+# ==============================================================================
+[experiment]
+name = "medqa-baseline"
+description = "Baseline RL training on MedQA with Qwen-0.5B-Instruct"
+author = "aymaneo"
+date = "2025-12-24"
+
+# ==============================================================================
+# MODEL CONFIGURATION
+# ==============================================================================
+[model]
+# Base model to fine-tune
+name_or_path = "Qwen/Qwen2.5-0.5B-Instruct"
+
+# CONCEPT: Using LoRA for efficient training
+# LoRA (Low-Rank Adaptation) trains small "adapter" layers instead of the full model
+# Benefits: 10-100x less memory, faster training, easier to share
+# Trade-off: Slightly less expressive than full fine-tuning
+use_lora = true
+
+[model.lora]
+# Rank (r): Size of the adapter matrices
+# Higher = more capacity but more memory
+# 8 is a good default for small models
+r = 8
+
+# Alpha: Scaling factor for LoRA updates
+# Usually set to 2*r (so 16 for r=8)
+alpha = 16
+
+# Target modules: Which parts of the model to adapt
+# For Qwen models, these are the attention and MLP layers
+target_modules = ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
+
+# Dropout: Regularization to prevent overfitting
+# 0.0 = no dropout (common for RL)
+lora_dropout = 0.0
+
+# ==============================================================================
+# ENVIRONMENT CONFIGURATION
+# ==============================================================================
+[environment]
+# Which verifiers environment to use
+name = "medqa"
+
+# CONCEPT: Chain-of-thought reasoning
+# use_think = true adds <think>...</think> tags for reasoning
+# For baseline: Start simple without reasoning (false)
+# For later: Try true to see if reasoning helps
+use_think = false
+
+# CONCEPT: Answer shuffling tests formatting vs knowledge
+# shuffle_answers = true randomizes A/B/C/D order
+# For baseline: False (standard format)
+# For later: True (tests if model learned format vs content)
+shuffle_answers = false
+
+# CONCEPT: Limiting training data for faster iteration
+# Start with subset (200) to iterate quickly
+# Once you find good hyperparameters, scale to full dataset
+limit_train = 200
+
+# Limit eval set too (for speed)
+limit_eval = 100
+
+# ==============================================================================
+# RL ALGORITHM CONFIGURATION (GRPO)
+# ==============================================================================
+[rl]
+# CONCEPT: GRPO (Group Relative Policy Optimization)
+# How it works:
+# 1. Generate N answers to same question (group)
+# 2. Compare answers within the group (relative)
+# 3. Upweight good answers, downweight bad ones
+# 4. Update policy to favor good answers
+
+# Algorithm variant
+# "cispo" = Conservative Iterative Sequential Policy Optimization
+# More stable than vanilla GRPO
+algorithm = "cispo"
+
+# CONCEPT: Number of rollouts (generations per question)
+# Higher = better learning signal but slower
+# 8 is a good balance for 24GB GPU
+num_generations = 8
+
+# CONCEPT: Beta (KL divergence coefficient)
+# Penalty for changing too much from original model
+# Higher beta = more conservative (safer)
+# Lower beta = more aggressive (riskier)
+# 0.001 is a good default
+beta = 0.001
+
+# CONCEPT: Learning rate
+# How big each gradient update is
+# Too high: Unstable training, model forgets
+# Too low: Very slow learning
+# 1e-6 is conservative for RL (safer)
+learning_rate = 1.0e-6
+
+# CONCEPT: Weight decay (L2 regularization)
+# Prevents overfitting by penalizing large weights
+# 0.0 is common for RL (we're already constrained by KL)
+weight_decay = 0.0
+
+# Learning rate schedule
+# "constant" = fixed LR throughout
+# "cosine" = gradual decrease
+lr_scheduler_type = "constant"
+
+# Warmup steps
+# Gradually increase LR from 0 → target over N steps
+# Helps stability at start of training
+warmup_steps = 10
+
+# ==============================================================================
+# TRAINING LOOP CONFIGURATION
+# ==============================================================================
+[training]
+# Output directory for this run
+output_dir = "./rl_training/experiments/medqa-baseline"
+
+# CONCEPT: Epochs vs Steps
+# Epoch = one pass through full dataset
+# For RL with 200 examples, 1 epoch is usually enough
+num_train_epochs = 1
+
+# Max steps override (set to -1 to use epochs)
+max_steps = -1
+
+# CONCEPT: Batch size
+# How many questions to process at once
+# Larger = more efficient but more memory
+# 4 is safe for 24GB GPU with num_generations=8
+per_device_train_batch_size = 4
+
+# CONCEPT: Gradient accumulation
+# Simulate larger batch size without more memory
+# Effective batch = per_device_batch * accumulation_steps
+# 1 = no accumulation (standard)
+gradient_accumulation_steps = 1
+
+# CONCEPT: Gradient checkpointing
+# Trade computation for memory (recompute activations during backward)
+# true = use less memory but slower
+# false = faster but more memory
+# For 0.5B model with LoRA, false is fine
+gradient_checkpointing = false
+
+# Max gradient norm (clipping to prevent exploding gradients)
+max_grad_norm = 1.0
+
+# ==============================================================================
+# GENERATION/INFERENCE CONFIGURATION
+# ==============================================================================
+[generation]
+# Max tokens to generate per answer
+max_new_tokens = 512
+
+# Temperature: Randomness in generation
+# Higher = more diverse answers
+# Lower = more deterministic
+# 1.0 is standard
+temperature = 1.0
+
+# Top-p (nucleus sampling)
+# Sample from top P% probability mass
+# 1.0 = no truncation (sample from full distribution)
+top_p = 1.0
+
+# ==============================================================================
+# LOGGING & CHECKPOINTING
+# ==============================================================================
+[logging]
+# Logging frequency
+# Log metrics every N steps
+logging_steps = 1
+
+# Evaluation frequency
+# Run eval every N steps (-1 to disable)
+eval_steps = 50
+
+# Save checkpoints every N steps
+# NOTE: For 40GB disk, using 100 instead of 50 to save space
+save_steps = 100
+
+# Keep only last N checkpoints (saves disk space)
+# NOTE: For 40GB disk, keeping only 2 checkpoints
+save_total_limit = 2
+
+# Reporting
+# Where to send metrics (wandb, tensorboard, none)
+report_to = ["wandb"]
+
+# Weights & Biases project name
+wandb_project = "medarc-rl"
+
+# Run name (will appear in wandb)
+run_name = "medqa-qwen0.5b-baseline"
+
+# ==============================================================================
+# INFRASTRUCTURE CONFIGURATION
+# ==============================================================================
+[infrastructure]
+# Device
+# "cuda" for GPU, "cpu" for CPU (very slow, not recommended)
+device = "cuda"
+
+# Mixed precision training
+# "bf16" = bfloat16 (recommended for A100/H100/4090)
+# "fp16" = float16 (for older GPUs)
+# "no" = float32 (most memory, most precise)
+bf16 = true
+fp16 = false
+
+# Distributed training
+# For single GPU, these don't matter
+# For multi-GPU, set world_size appropriately
+world_size = 1
+
+# DataLoader workers
+# More workers = faster data loading
+# 0 = load in main process (simpler, fine for RL)
+dataloader_num_workers = 0
+
+# ==============================================================================
+# ADVANCED OPTIONS (Usually don't need to change)
+# ==============================================================================
+[advanced]
+# Seed for reproducibility
+seed = 42
+
+# Disable tqdm progress bars in logs
+disable_tqdm = false
+
+# Load best model at end
+load_best_model_at_end = false
+
+# Metric for "best" model
+metric_for_best_model = "eval_reward"
+
+# ==============================================================================
+# NOTES & EXPECTED RESULTS
+# ==============================================================================
+# Expected training time: 2-3 hours on RTX 4090 (24GB)
+# Expected memory usage: ~18-20GB VRAM
+# Expected cost: ~$1.20 on RunPod
+#
+# Success criteria:
+# - Reward increases from ~0.25 → 0.35-0.45
+# - KL divergence stays < 0.1
+# - Test accuracy improves 1-5%
+#
+# If things go wrong:
+# - OOM: Reduce batch_size to 2 or num_generations to 4
+# - No improvement: Try learning_rate = 5e-6
+# - KL too high: Increase beta to 0.01
+# ==============================================================================
