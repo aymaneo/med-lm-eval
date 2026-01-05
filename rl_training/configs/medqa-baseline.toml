@@ -1,5 +1,9 @@
 # MedQA Baseline RL Training Configuration
-# Absolute minimum config
+# Single GPU setup (RTX A4500)
+
+# GPU allocation - use GPU 0 for everything
+inference_gpu_ids = [0]
+trainer_gpu_ids = [0]
 
 max_steps = 100
 
