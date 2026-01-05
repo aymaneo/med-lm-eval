@@ -78,9 +78,11 @@ uv pip install flash-attn --no-build-isolation
 
 # Install your custom medarc_verifiers package
 echo "Installing medarc_verifiers..."
-cd ..  # Go to repo root
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+cd "$REPO_ROOT"
 uv pip install -e .
-cd rl_training
+cd "$SCRIPT_DIR/.."
 
 echo "✅ Dependencies installed"
 echo ""
