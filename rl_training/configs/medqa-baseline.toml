@@ -15,11 +15,11 @@ project = "medarc-rl"
 name = "medqa-qwen0.5b-baseline"
 
 [orchestrator]
-batch_size = 16
-rollouts_per_example = 8
+batch_size = 8
+rollouts_per_example = 4
 
 [orchestrator.sampling]
-max_tokens = 512
+max_tokens = 384
 
 [[orchestrator.env]]
 id = "medqa"
@@ -28,6 +28,6 @@ id = "medqa"
 lr = 1.0e-6
 
 [inference]
-gpu_memory_utilization = 0.7
+gpu_memory_utilization = 0.6
 
 [ckpt]
