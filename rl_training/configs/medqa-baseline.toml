@@ -28,5 +28,6 @@ id = "medqa"
 lr = 1.0e-6
 
 [inference]
+gpu_memory_utilization = 0.65
 
 [ckpt]
