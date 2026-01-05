@@ -1,5 +1,5 @@
 # MedQA Baseline RL Training Configuration
-# Based on the prime-rl examples (reverse-text, wordle)
+# Minimal config based on prime-rl reverse-text example
 
 max_steps = 100
 seq_len = 2048
@@ -15,41 +15,15 @@ name = "medqa-qwen0.5b-baseline"
 batch_size = 32
 rollouts_per_example = 8
 
-[[orchestrator.env]]
-id = "medqa"
-limit_train = 200
-limit_eval = 100
-
 [orchestrator.sampling]
 max_tokens = 512
 
-[trainer]
-# LoRA configuration
-use_lora = true
-lora_r = 8
-lora_alpha = 16
-lora_dropout = 0.0
-lora_target_modules = ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
+[[orchestrator.env]]
+id = "medqa"
 
 [trainer.optim]
 lr = 1.0e-6
-weight_decay = 0.0
-
-[trainer.scheduler]
-type = "constant"
-warmup_steps = 10
-
-[trainer.rl]
-beta = 0.001
-
-[trainer.logging]
-steps = 1
-eval_steps = 50
-save_steps = 100
-save_total_limit = 2
-
-[trainer.mixed_precision]
-bf16 = true
 
 [inference]
-# Single GPU inference
+
+[ckpt]
