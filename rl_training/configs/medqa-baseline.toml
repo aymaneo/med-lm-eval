@@ -1,8 +1,7 @@
 # MedQA Baseline RL Training Configuration
-# Minimal config based on prime-rl reverse-text example
+# Absolute minimum config
 
 max_steps = 100
-seq_len = 2048
 
 [model]
 name = "Qwen/Qwen2.5-0.5B-Instruct"
