@@ -1,6 +1,6 @@
 # MedQA Baseline RL Training Configuration
 # Single GPU setup (RTX A6000 - 48GB VRAM)
-# Model: Qwen3-8B (8B params)
+# Model: Qwen2.5-3B-Instruct (3B params)
 # Goal: Show clear reward improvement over 50 steps
 
 # GPU allocation - use GPU 0 for everything
@@ -10,11 +10,11 @@ trainer_gpu_ids = [0]
 max_steps = 50
 
 [model]
-name = "Qwen/Qwen3-8B"
+name = "Qwen/Qwen2.5-3B-Instruct"
 
 [wandb]
 project = "medarc-rl"
-name = "medqa-qwen3-8b-50steps"
+name = "medqa-qwen2.5-3b-50steps"
 
 [orchestrator]
 batch_size = 4

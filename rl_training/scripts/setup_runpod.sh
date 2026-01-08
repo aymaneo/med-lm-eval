@@ -30,18 +30,6 @@ if ! command -v uv &> /dev/null; then
 else
     echo "uv already installed"
 fi
-
-# Add uv to PATH permanently
-export PATH="$HOME/.local/bin:$PATH"
-if ! grep -q 'export PATH="$HOME/.local/bin:$PATH"' ~/.bashrc; then
-    echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
-fi
-
-# Verify uv is accessible
-if ! command -v uv &> /dev/null; then
-    echo "ERROR: uv not found in PATH"
-    exit 1
-fi
 echo ""
 
 # ==============================================================================
@@ -88,9 +76,6 @@ if [ ! -d ".venv" ]; then
 fi
 source .venv/bin/activate
 
-# Ensure uv is in PATH
-export PATH="$HOME/.local/bin:$PATH"
-
 # Install prime-rl and medqa environment
 uv pip install -e .
 uv pip install -e "$REPO_ROOT/environments/medqa"
@@ -120,9 +105,13 @@ echo "========================================"
 echo "Setup Complete!"
 echo "========================================"
 echo ""
+echo "IMPORTANT: Add uv to PATH and set HF token:"
+echo "  export PATH=\"\$HOME/.local/bin:\$PATH\""
+echo "  export HF_TOKEN=your-huggingface-token"
+echo ""
 echo "To start training:"
 echo "  cd $REPO_ROOT/rl_training/prime-rl"
 echo "  source .venv/bin/activate"
-echo "  export WANDB_API_KEY=your-key"
+echo "  export WANDB_API_KEY=your-wandb-key"
 echo "  uv run rl @ $REPO_ROOT/rl_training/configs/medqa-baseline.toml"
 echo ""
