@@ -30,7 +30,7 @@ id = "medqa"
 lr = 3.0e-6
 
 [inference]
-gpu_memory_utilization = 0.70
+gpu_memory_utilization = 0.40
 
 [ckpt]
 interval = 25
