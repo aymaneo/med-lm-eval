@@ -1,21 +1,23 @@
 # MedQA Baseline RL Training Configuration
 # Single GPU setup (RTX A6000 - 48GB VRAM)
+# Model: Qwen3-8B-Instruct (8B params)
+# Goal: Show clear reward improvement over 50 steps
 
 # GPU allocation - use GPU 0 for everything
 inference_gpu_ids = [0]
 trainer_gpu_ids = [0]
 
-max_steps = 40
+max_steps = 50
 
 [model]
-name = "Qwen/Qwen2.5-0.5B-Instruct"
+name = "Qwen/Qwen3-8B-Instruct"
 
 [wandb]
 project = "medarc-rl"
-name = "medqa-qwen0.5b-baseline"
+name = "medqa-qwen3-8b-50steps"
 
 [orchestrator]
-batch_size = 8
+batch_size = 4
 rollouts_per_example = 4
 
 [orchestrator.sampling]
@@ -24,11 +26,24 @@ max_tokens = 384
 [[orchestrator.env]]
 id = "medqa"
 
+[trainer]
+gradient_checkpointing = true
+
 [trainer.optim]
-lr = 1.0e-6
+lr = 3.0e-6
+
+[trainer.lora]
+r = 16
+alpha = 32
+target_modules = ["q_proj", "v_proj", "k_proj", "o_proj"]
+lora_dropout = 0.05
+bias = "none"
 
 [inference]
-gpu_memory_utilization = 0.6
+gpu_memory_utilization = 0.70
+dtype = "bfloat16"
+max_model_len = 2048
 
 [ckpt]
-interval = 1000
+interval = 25
+save_optimizer_states = false
