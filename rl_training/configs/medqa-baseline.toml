@@ -26,24 +26,11 @@ max_tokens = 384
 [[orchestrator.env]]
 id = "medqa"
 
-[trainer]
-gradient_checkpointing = true
-
 [trainer.optim]
 lr = 3.0e-6
 
-[trainer.lora]
-r = 16
-alpha = 32
-target_modules = ["q_proj", "v_proj", "k_proj", "o_proj"]
-lora_dropout = 0.05
-bias = "none"
-
 [inference]
 gpu_memory_utilization = 0.70
-dtype = "bfloat16"
-max_model_len = 2048
 
 [ckpt]
 interval = 25
-save_optimizer_states = false
