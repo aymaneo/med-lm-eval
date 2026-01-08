@@ -31,9 +31,11 @@ else
     echo "uv already installed"
 fi
 
-# Add uv to PATH for current session and future shells
+# Add uv to PATH permanently
 export PATH="$HOME/.local/bin:$PATH"
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+if ! grep -q 'export PATH="$HOME/.local/bin:$PATH"' ~/.bashrc; then
+    echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+fi
 
 # Verify uv is accessible
 if ! command -v uv &> /dev/null; then
@@ -86,9 +88,16 @@ if [ ! -d ".venv" ]; then
 fi
 source .venv/bin/activate
 
+# Ensure uv is in PATH
+export PATH="$HOME/.local/bin:$PATH"
+
 # Install prime-rl and medqa environment
 uv pip install -e .
 uv pip install -e "$REPO_ROOT/environments/medqa"
+
+# Install flash-attention (required by trainer)
+echo "Installing flash-attention (may take 2-3 minutes)..."
+uv pip install flash-attn --no-build-isolation
 
 echo "prime-rl ready"
 echo ""
