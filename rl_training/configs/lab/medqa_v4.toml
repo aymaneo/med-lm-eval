@@ -1,0 +1,33 @@
+# MedQA RL Training - Config v4
+# Changes from v3: even higher max_tokens to eliminate truncation
+
+model = "Qwen/Qwen3-4B-Instruct-2507"
+max_steps = 300
+env_file = ["secrets.env"]
+
+# Training parameters (same as v3)
+batch_size = 512
+rollouts_per_example = 16
+learning_rate = 5e-6
+lora_alpha = 64
+
+[sampling]
+max_tokens = 2048             # Increased from 1024 to eliminate truncation completely
+temperature = 1.0
+
+[[env]]
+id = "aymaneo/medqa"
+args = { use_think = false, shuffle_answers = false }
+
+[wandb]
+project = "medarc-rl"
+name = "medqa-v4-max-context"
+
+[eval]
+interval = 25
+num_examples = 100
+rollouts_per_example = 1
+
+[[eval.env]]
+id = "aymaneo/medqa"
+args = { use_think = false }
