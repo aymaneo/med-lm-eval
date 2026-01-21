@@ -1,0 +1,51 @@
+# MedQA Full Training Configuration for Prime Lab
+# Extended training with larger batch size
+#
+# Estimated: ~500 steps for meaningful improvement (based on Google MedGemma results)
+
+max_steps = 500
+seq_len = 2048
+
+[wandb]
+project = "medarc-rl"
+name = "medqa-full-training"
+
+[model]
+name = "Qwen/Qwen2.5-3B-Instruct"
+
+[orchestrator]
+batch_size = 512
+rollouts_per_example = 16
+
+[orchestrator.sampling]
+max_tokens = 512
+temperature = 0.7
+top_p = 0.95
+
+[[orchestrator.env]]
+# Published on Prime Hub: https://app.primeintellect.ai/dashboard/environments/aymaneo/medqa
+id = "aymaneo/medqa"
+name = "medqa"
+args = { use_think = false, shuffle_answers = false }
+
+[trainer]
+[trainer.lora]
+enabled = true
+r = 64
+alpha = 64
+dropout = 0.05
+target_modules = "all-linear"
+
+[trainer.optim]
+lr = 5.0e-6
+weight_decay = 0.01
+warmup_ratio = 0.1
+
+[trainer.scheduler]
+type = "cosine"
+
+[inference]
+gpu_memory_utilization = 0.85
+
+[ckpt]
+interval = 100

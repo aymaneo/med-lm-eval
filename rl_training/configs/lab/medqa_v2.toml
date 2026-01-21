@@ -1,0 +1,33 @@
+# MedQA RL Training - Config v2 based on Will Brown's recommendations
+# Safe baseline: batch_size 512, rollouts 16, temperature 1.0
+
+model = "Qwen/Qwen3-4B-Instruct-2507"
+max_steps = 300
+env_file = ["secrets.env"]
+
+# Training parameters - Will's safe baseline
+batch_size = 512              # Total rollouts per batch (safe baseline)
+rollouts_per_example = 16     # More rollouts for better GRPO variance
+learning_rate = 1e-6          # Lower LR for stability when reward oscillates
+lora_alpha = 64
+
+[sampling]
+max_tokens = 512              # Prevent small models from gibberish
+temperature = 1.0             # Good exploration per Will
+
+[[env]]
+id = "aymaneo/medqa"
+args = { use_think = false, shuffle_answers = false }
+
+[wandb]
+project = "medarc-rl"
+name = "medqa-v2-will-baseline"
+
+[eval]
+interval = 25                 # More frequent evals to track progress
+num_examples = 100
+rollouts_per_example = 1
+
+[[eval.env]]
+id = "aymaneo/medqa"
+args = { use_think = false }

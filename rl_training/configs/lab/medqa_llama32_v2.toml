@@ -1,0 +1,33 @@
+# MedQA RL Training with Llama 3.2 3B - v2
+# Changes: more steps, lower LR for stability, more eval examples
+
+model = "meta-llama/Llama-3.2-3B-Instruct"
+max_steps = 500
+env_file = ["secrets.env"]
+
+# Training parameters
+batch_size = 512
+rollouts_per_example = 16
+learning_rate = 3e-6
+lora_alpha = 64
+
+[sampling]
+max_tokens = 2048
+temperature = 1.0
+
+[[env]]
+id = "aymaneo/medqa"
+args = { use_think = false, shuffle_answers = false }
+
+[wandb]
+project = "medarc-rl"
+name = "medqa-llama32-3b-v2"
+
+[eval]
+interval = 25
+num_examples = 300
+rollouts_per_example = 1
+
+[[eval.env]]
+id = "aymaneo/medqa"
+args = { use_think = false }

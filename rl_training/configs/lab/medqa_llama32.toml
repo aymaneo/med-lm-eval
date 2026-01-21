@@ -1,0 +1,33 @@
+# MedQA RL Training with Llama 3.2 3B
+# Smaller model - baseline likely ~40-55%, should show reward improvement
+
+model = "meta-llama/Llama-3.2-3B-Instruct"
+max_steps = 300
+env_file = ["secrets.env"]
+
+# Training parameters (same as v4)
+batch_size = 512
+rollouts_per_example = 16
+learning_rate = 5e-6
+lora_alpha = 64
+
+[sampling]
+max_tokens = 2048
+temperature = 1.0
+
+[[env]]
+id = "aymaneo/medqa"
+args = { use_think = false, shuffle_answers = false }
+
+[wandb]
+project = "medarc-rl"
+name = "medqa-llama32-3b"
+
+[eval]
+interval = 25
+num_examples = 100
+rollouts_per_example = 1
+
+[[eval.env]]
+id = "aymaneo/medqa"
+args = { use_think = false }
